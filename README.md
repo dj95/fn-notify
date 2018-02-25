@@ -6,7 +6,7 @@ A simple notification pop-up that displays the current volume(for now).
 There are plans to display battery, brightness and touchpad status either.
 
 
-![Screenshot](./img/screenshot.png)
+![Screenshot](/img/music.png)
 
 
 **Warning: This project is work in progress and may cause instability or something else!**
