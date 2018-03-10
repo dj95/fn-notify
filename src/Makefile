@@ -3,29 +3,29 @@
 
 include config.mk
 
-SRC = fn-notify.c
+SRC = fn-notify.c draw.c
 OBJ = ${SRC:.c=.o}
 
 all: fn-notify
 
 options:
-	@echo dmenu build options:
+	@echo fn-notify build options:
 	@echo "CFLAGS   = ${CFLAGS}"
 	@echo "LDFLAGS  = ${LDFLAGS}"
 	@echo "CC       = ${CC}"
 
-.c.o:
-	@echo CC -c $<
-	@${CC} -c $< ${CFLAGS}
+.o: $(SRCS)
+	@echo CC -o $@
+	$(CC) $(CFLAGS) $< -o $@
 
 ${OBJ}: config.mk
 
-sdash: fn-notify.o 
+fn-notify: ${OBJ}
 	@echo CC -o $@
 	@${CC} -o $@ ${OBJ} ${LDFLAGS}
 
 clean:
 	@echo cleaning
-	@rm -f fn-notify.o
+	@rm -f ${OBJ}
 
 .PHONY: all options clean

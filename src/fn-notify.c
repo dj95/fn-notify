@@ -5,16 +5,9 @@
  * (c) 2017 Daniel Jankowski
  */
 
-#include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
 
-#include <X11/X.h>
-#include <X11/Xlib.h> // Every Xlib program must include this
-#include <X11/Xatom.h>
-#include <X11/Xutil.h>
-#include <X11/Xresource.h> 
-#include <X11/extensions/shape.h>
 #include <unistd.h>
 #include <math.h>
 #include <signal.h>
@@ -23,6 +16,8 @@
 
 #include <fcntl.h>
 #include <errno.h>
+
+#include "draw.h"
 
 #define MAX(a,b)              ((a) > (b) ? (a) : (b))
 
@@ -175,114 +170,6 @@ int CheckForAnotherInstance() {
 }
 
 
-void drawVolumeIcon() {
-    XSetForeground(display, gc, strtoul("ffffffff", 0, 16));
-    XFillArc(
-            display, window, gc,
-            50, 50,
-            100, 100,
-            -45 * 64, 90 * 64);
-    XSetForeground(display, gc, strtoul("a0171717", 0, 16));
-    XFillArc(
-            display, window, gc,
-            55, 55,
-            90, 90,
-            -45 * 64, 90 * 64);
-    XSetForeground(display, gc, strtoul("ffffffff", 0, 16));
-    XFillArc(
-            display, window, gc,
-            60, 60,
-            80, 80,
-            -45 * 64, 90 * 64);
-    XSetForeground(display, gc, strtoul("a0171717", 0, 16));
-    XFillArc(
-            display, window, gc,
-            65, 65,
-            70, 70,
-            -45 * 64, 90 * 64);
-    XSetForeground(display, gc, strtoul("ffffffff", 0, 16));
-    XFillArc(
-            display, window, gc,
-            70, 70,
-            60, 60,
-            -45 * 64, 90 * 64);
-    XSetForeground(display, gc, strtoul("a0171717", 0, 16));
-    XFillArc(
-            display, window, gc,
-            75, 75,
-            50, 50,
-            -45 * 64, 90 * 64);
-
-    XSetForeground(display, gc, strtoul("ffffffff", 0, 16));
-    XFillRectangle(display, window, gc, 55, 75, 50, 50);
-
-    XSetForeground(display, gc, strtoul("a0171717", 0, 16));
-    XFillArc(
-            display, window, gc,
-            50, 60,
-            60, 60,
-            45 * 64, 135 * 64);
-    XFillArc(
-            display, window, gc,
-            50, 80,
-            60, 60,
-            180 * 64, 135 * 64);
-}
-
-
-void drawVolumeIconMuted() {
-    XSetForeground(display, gc, strtoul("a0171717", 0, 16));
-    XFillArc(
-            display, window, gc,
-            50, 50,
-            100, 100,
-            -45 * 64, 90 * 64);
-    XSetForeground(display, gc, strtoul("a0171717", 0, 16));
-    XFillArc(
-            display, window, gc,
-            55, 55,
-            90, 90,
-            -45 * 64, 90 * 64);
-    XSetForeground(display, gc, strtoul("a0171717", 0, 16));
-    XFillArc(
-            display, window, gc,
-            60, 60,
-            80, 80,
-            -45 * 64, 90 * 64);
-    XSetForeground(display, gc, strtoul("a0171717", 0, 16));
-    XFillArc(
-            display, window, gc,
-            65, 65,
-            70, 70,
-            -45 * 64, 90 * 64);
-    XSetForeground(display, gc, strtoul("a0171717", 0, 16));
-    XFillArc(
-            display, window, gc,
-            70, 70,
-            60, 60,
-            -45 * 64, 90 * 64);
-    XSetForeground(display, gc, strtoul("a0171717", 0, 16));
-    XFillArc(
-            display, window, gc,
-            75, 75,
-            50, 50,
-            -45 * 64, 90 * 64);
-
-    XSetForeground(display, gc, strtoul("ff5d5d5d", 0, 16));
-    XFillRectangle(display, window, gc, 55, 75, 50, 50);
-
-    XSetForeground(display, gc, strtoul("a0171717", 0, 16));
-    XFillArc(
-            display, window, gc,
-            50, 60,
-            60, 60,
-            45 * 64, 135 * 64);
-    XFillArc(
-            display, window, gc,
-            50, 80,
-            60, 60,
-            180 * 64, 135 * 64);
-}
 
 
 void sighandler(int signum) {
@@ -308,16 +195,21 @@ void sighandler(int signum) {
     fclose(fp);
 
     // get the mute status
-    int mute = i % 2;
+    int mute = (int) ((i % 100) / 10);
+
+    printf("%d\n", i);
+    printf("%d\n", mute);
+
+    int mode = i % 2; 
 
     // get the volume value
-    i = (int) i / 10;
+    i = (int) i / 100;
 
     // calculate slider length
     int sliderLength = (int) (i * 1.6);
 
     // erase the old slider
-    XSetForeground(display, gc, strtoul("a0171717", 0, 16));
+    XSetForeground(display, gc, strtoul(BG_COLOR, 0, 16));
     XFillRectangle(display, window, gc, 20, 175, 160, 5);
 
     // change color if muted
@@ -325,13 +217,22 @@ void sighandler(int signum) {
         drawVolumeIconMuted();
 
         // draw a new one
-        XSetForeground(display, gc, strtoul("ff5d5d5d", 0, 16));
+        XSetForeground(display, gc, strtoul(FG_MUTED, 0, 16));
         XFillRectangle(display, window, gc, 20, 175, sliderLength, 5);
     } else {
-        drawVolumeIcon();
+        switch (mode) {
+            case 1:
+                drawVolumeIcon();
+                break;
+            case 2:
+                drawBrightnessIcon();
+                break;
+            default:
+                break;
+        }
 
         // draw a new one
-        XSetForeground(display, gc, strtoul("ffffffff", 0, 16));
+        XSetForeground(display, gc, strtoul(FG_COLOR, 0, 16));
         XFillRectangle(display, window, gc, 20, 175, sliderLength, 5);
     }
 
@@ -379,7 +280,7 @@ void init_window() {
             AllocNone
             );
     attr.border_pixel = 0;
-    attr.background_pixel = 0xa0171717;
+    attr.background_pixel = strtoul(BG_COLOR, 0, 16);
     attr.override_redirect = 1;
     attr.event_mask = KeyPressMask | KeyReleaseMask | ExposureMask | SubstructureNotifyMask;
 
@@ -410,7 +311,7 @@ void init_window() {
     XSetWMProtocols(display, window, &wm_delete_window, 1);
 
     // set drawing color
-    XSetForeground(display, gc, strtoul("ffffffff", 0, 16));
+    XSetForeground(display, gc, strtoul(FG_COLOR, 0, 16));
 
     drawRoundCorners();
 
@@ -421,18 +322,25 @@ void init_window() {
 
 int main(int argc, char *argv[]) {
     // check if arguments are provided
-    if (argc != 2 && argc != 3) {
+    if (argc != 3 && argc != 4) {
       //TODO: multiple arguments and help text
         printf("No arguments provided\n");
         exit(-1);
     }
 
     int mute = 0;
+    int mode = 0;
+    if (strncmp(argv[1], "vol", 3) == 0) {
+        mode = 1;
+    }
+    if (strncmp(argv[1], "brig", 4) == 0) {
+        mode = 2;
+    }
 
     // check if the mute flag is set
-    if (argc == 3) {
-        printf("%s\n", argv[2]);
-        if (strncmp(argv[2], "--mute", 6) == 0) {
+    if (argc == 4) {
+        printf("%s\n", argv[3]);
+        if (strncmp(argv[3], "--mute", 6) == 0) {
             mute = 1;
         }
     }
@@ -444,7 +352,7 @@ int main(int argc, char *argv[]) {
     // initialize variables for the arguments
     char *p;
     num = 0;
-    long conv = strtol(argv[1], &p, 10);
+    long conv = strtol(argv[2], &p, 10);
     errno = 0;
 
     // Check for errors: e.g., the string does not represent an integer
@@ -457,15 +365,14 @@ int main(int argc, char *argv[]) {
     }
 
     if (isRunning == 1) {
-        //TODO: redraw with new value if its running
         FILE *fp;
 
         // write value to save file
         fp = fopen("/home/neo/.cache/fn-control.save", "w+");
         if (mute) {
-            fprintf(fp, "%03d1", num);
+            fprintf(fp, "%03d1%d", num, mode);
         } else {
-            fprintf(fp, "%03d0", num);
+            fprintf(fp, "%03d0%d", num, mode);
         }
         fclose(fp);
 
@@ -497,14 +404,27 @@ int main(int argc, char *argv[]) {
     if (mute == 1) {
         drawVolumeIconMuted();
 
-        // draw the slider
-        XSetForeground(display, gc, strtoul("ff5d5d5d", 0, 16));
-        XFillRectangle(display, window, gc, 20, 175, sliderLength, 5);
-    } else {
-        drawVolumeIcon();
+        // set slider color
+        XSetForeground(display, gc, strtoul(BG_COLOR, 0, 16));
 
         // draw the slider
-        XSetForeground(display, gc, strtoul("ffffffff", 0, 16));
+        XFillRectangle(display, window, gc, 20, 175, sliderLength, 5);
+    } else {
+        switch (mode) {
+            case 1:
+                drawVolumeIcon();
+                break;
+            case 2:
+                drawBrightnessIcon();
+                break;
+            default:
+                break;
+        }
+
+        // set slider color
+        XSetForeground(display, gc, strtoul(FG_COLOR, 0, 16));
+
+        // draw the slider
         XFillRectangle(display, window, gc, 20, 175, sliderLength, 5);
     }
 
