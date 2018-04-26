@@ -142,7 +142,7 @@ int CheckForAnotherInstance() {
     struct flock fl;
 
     // open the file or create it, if its non existant
-    fd = open("/home/neo/.cache/fn-control.lock", O_RDWR | O_CREAT);
+    fd = open("/home/daniel/.cache/fn-control.lock", O_RDWR | O_CREAT, 0755);
 
     // if an error occured, return 0
     if (fd == -1) {
@@ -190,7 +190,7 @@ void sighandler(int signum) {
     executionLength = diff_t + 1;
 
     // get value from save file
-    fp = fopen("/home/neo/.cache/fn-control.save", "r");
+    fp = fopen("/home/daniel/.cache/fn-control.save", "r");
     fscanf (fp, "%d", &i); 
     fclose(fp);
 
@@ -368,7 +368,7 @@ int main(int argc, char *argv[]) {
         FILE *fp;
 
         // write value to save file
-        fp = fopen("/home/neo/.cache/fn-control.save", "w+");
+        fp = fopen("/home/daniel/.cache/fn-control.save", "w+");
         if (mute) {
             fprintf(fp, "%03d1%d", num, mode);
         } else {
