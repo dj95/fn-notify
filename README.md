@@ -28,8 +28,9 @@ There are plans to display battery, brightness and touchpad status either.
 
 ### Usage
 
-- Just run it with `./fn-notify $LEVEL` or `fn-notify $LEVEL` from the `$PATH`.
+- Just run it with `./fn-notify $FUNC $LEVEL` or `fn-notify $FUNC $LEVEL` from the `$PATH`.
   `$LEVEL` ois a value between `0 and 100`. For a mute-popup run `fn-notify $LEVEL --mute`.
+  $FUNC needs to be `vol` for volume or `brig` for brightness.
 
 
 ### TODO
@@ -37,7 +38,7 @@ There are plans to display battery, brightness and touchpad status either.
 - config file
 - further information
 - code refactoring and optimization
-- brightness, battery and touchpad status
+- battery and touchpad status
 
 
 ### License 
