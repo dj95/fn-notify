@@ -7,8 +7,10 @@
 
 #include <string.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 #include <unistd.h>
+#include <pwd.h>
 #include <math.h>
 #include <signal.h>
 #include <pthread.h>
@@ -134,15 +136,38 @@ void* checkExit(void *args) {
     // if the execution time is reache, exit gracefully
     exit(0);
 }
-    
 
-int CheckForAnotherInstance() {
+
+char* concat(const char *s1, const char *s2) {
+    // get length of both strings
+    const size_t len1 = strlen(s1);
+    const size_t len2 = strlen(s2);
+
+    // allocate memory for both strings + null byte
+    char *result = malloc(len1 + len2 + 1);
+
+    // copy the strings into the result buffer
+    memcpy(result, s1, len1);
+    memcpy(result + len1, s2, len2 + 1);
+
+    // return it
+    return result;
+}
+
+
+int CheckForAnotherInstance(char* homedir) {
 #ifndef _MSC_VER
     int fd;
     struct flock fl;
 
+    // path of the lock file in home
+    char* path = "/.cache/fn-control.lock";
+
+    // conecatenate with path from homedir
+    char* full_path = concat(homedir, path);
+
     // open the file or create it, if its non existant
-    fd = open("/home/daniel/.cache/fn-control.lock", O_RDWR | O_CREAT, 0755);
+    fd = open(full_path, O_RDWR | O_CREAT, S_IRWXU);
 
     // if an error occured, return 0
     if (fd == -1) {
@@ -170,13 +195,18 @@ int CheckForAnotherInstance() {
 }
 
 
-
-
 void sighandler(int signum) {
     printf("Caught signal %d, coming out...\n", signum);
     // get the new value
     FILE *fp;
     int i;
+
+    // get the home directory
+    char *homedir = getenv("HOME");
+
+    if (homedir == NULL) {
+        printf("Error! Cannot get homedir\n");
+    }
 
     double diff_t;
 
@@ -189,8 +219,11 @@ void sighandler(int signum) {
     // set the new execution length to 1 second in the future
     executionLength = diff_t + 1;
 
+    char* path = "/.cache/fn-control.save";
+    char* full_path = concat(homedir, path);
+
     // get value from save file
-    fp = fopen("/home/daniel/.cache/fn-control.save", "r");
+    fp = fopen(full_path, "r");
     fscanf (fp, "%d", &i); 
     fclose(fp);
 
@@ -345,9 +378,16 @@ int main(int argc, char *argv[]) {
         }
     }
 
+    // get the home directory
+    char *homedir = getenv("HOME");
+
+    if (homedir == NULL) {
+        printf("Error! Cannot get homedir\n");
+    }
+
     // check if another instance is running
     int isRunning;
-    isRunning = CheckForAnotherInstance();
+    isRunning = CheckForAnotherInstance(homedir);
 
     // initialize variables for the arguments
     char *p;
@@ -367,14 +407,19 @@ int main(int argc, char *argv[]) {
     if (isRunning == 1) {
         FILE *fp;
 
+        char* path = "/.cache/fn-control.save";
+        char* full_path = concat(homedir, path);
+
         // write value to save file
-        fp = fopen("/home/daniel/.cache/fn-control.save", "w+");
+        fp = fopen(full_path, "w+");
         if (mute) {
             fprintf(fp, "%03d1%d", num, mode);
         } else {
             fprintf(fp, "%03d0%d", num, mode);
         }
         fclose(fp);
+        printf("running\n");
+
 
         // get pid of the running process
         char line[20];
